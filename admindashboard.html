@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Almeera Catering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+      
+      /* Image hover effects */
+      .image-clickable {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      
+      .image-clickable:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+      }
+      
+      /* Modal animations */
+      #image-modal {
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      #image-modal > div {
+        animation: slideIn 0.3s ease-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideIn {
+        from { 
+          opacity: 0;
+          transform: scale(0.8) translateY(20px);
+        }
+        to { 
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <span class="ml-3 text-sm text-gray-500">Almeera Catering</span>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="index.html" class="text-blue-600 hover:text-blue-800"
+              >Lihat Website</a
+            >
+            <button
+              id="logout-btn"
+              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-8">
+          <button
+            class="tab-btn active py-4 px-2 border-b-2 border-blue-500 text-blue-600 font-medium"
+            data-tab="menu"
+          >
+            Menu Makanan
+          </button>
+          <button
+            class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            data-tab="articles"
+          >
+            Artikel & Berita
+          </button>
+          <button
+            class="tab-btn py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700"
+            data-tab="testimonials"
+          >
+            Testimoni
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- Menu Management Tab -->
+      <div id="menu-tab" class="tab-content">
+        <div class="bg-white rounded-lg shadow">
+          <div
+            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+          >
+            <h2 class="text-xl font-semibold text-gray-800">
+              Kelola Menu Makanan
+            </h2>
+            <button
+              id="add-menu-btn"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Tambah Menu
+            </button>
+          </div>
+          <div class="p-6">
+            <div id="menu-list" class="space-y-4">
+              <!-- Menu items will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles Management Tab -->
+      <div id="articles-tab" class="tab-content hidden">
+        <div class="bg-white rounded-lg shadow">
+          <div
+            class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+          >
+            <h2 class="text-xl font-semibold text-gray-800">
+              Kelola Artikel & Berita
+            </h2>
+            <button
+              id="add-article-btn"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Tambah Artikel
+            </button>
+          </div>
+          <div class="p-6">
+            <div id="articles-list" class="space-y-4">
+              <!-- Articles will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonials Management Tab -->
+      <div id="testimonials-tab" class="tab-content hidden">
+        <div class="bg-white rounded-lg shadow">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">
+              Kelola Testimoni Pelanggan
+            </h2>
+          </div>
+          <div class="p-6">
+            <div id="testimonials-list" class="space-y-4">
+              <!-- Testimonials will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal for Add/Edit Menu -->
+    <div
+      id="menu-modal"
+      class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+      >
+        <div class="mt-3">
+          <h3
+            class="text-lg font-medium text-gray-900 mb-4"
+            id="menu-modal-title"
+          >
+            Tambah Menu
+          </h3>
+          <form id="menu-form">
+            <input type="hidden" id="menu-id" />
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Nama Menu</label
+              >
+              <input
+                type="text"
+                id="menu-name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Masukkan nama menu"
+                aria-label="Nama menu"
+                placeholder="Masukkan nama menu"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Deskripsi</label
+              >
+              <textarea
+                id="menu-description"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                rows="3"
+                title="Masukkan deskripsi menu"
+                aria-label="Deskripsi menu"
+                placeholder="Masukkan deskripsi menu"
+                required
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Harga</label
+              >
+              <input
+                type="number"
+                id="menu-price"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Masukkan harga menu"
+                aria-label="Harga menu"
+                placeholder="Masukkan harga (contoh: 50000)"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Upload Gambar Menu</label
+              >
+              <input
+                type="file"
+                id="menu-image-file"
+                accept="image/*"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Pilih file gambar menu"
+                aria-label="File gambar menu"
+                required
+              />
+              <p class="text-sm text-gray-500 mt-1">
+                Format: JPG, PNG, GIF (Max: 2MB)
+              </p>
+              <div id="menu-image-preview" class="mt-2 hidden">
+                <img
+                  id="menu-preview-img"
+                  src=""
+                  alt="Preview gambar menu"
+                  class="w-32 h-32 object-cover rounded border"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button
+                type="button"
+                id="cancel-menu"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Add/Edit Article -->
+    <div
+      id="article-modal"
+      class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div
+        class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white"
+      >
+        <div class="mt-3">
+          <h3
+            class="text-lg font-medium text-gray-900 mb-4"
+            id="article-modal-title"
+          >
+            Tambah Artikel
+          </h3>
+          <form id="article-form">
+            <input type="hidden" id="article-id" />
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Judul Artikel</label
+              >
+              <input
+                type="text"
+                id="article-title"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Masukkan judul artikel"
+                aria-label="Judul artikel"
+                placeholder="Masukkan judul artikel"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Penulis</label
+              >
+              <input
+                type="text"
+                id="article-author"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Masukkan nama penulis"
+                aria-label="Nama penulis artikel"
+                placeholder="Masukkan nama penulis"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Kategori</label
+              >
+              <select
+                id="article-category"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                required
+                title="Pilih kategori artikel"
+                aria-label="Kategori artikel"
+              >
+                <option value="" disabled selected>Pilih kategori...</option>
+                <option value="Business">Business</option>
+                <option value="Catering">Catering</option>
+                <option value="Health">Health</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Konten Artikel</label
+              >
+              <textarea
+                id="article-content"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                rows="6"
+                title="Masukkan konten artikel"
+                aria-label="Konten artikel"
+                placeholder="Tulis konten artikel di sini..."
+                required
+              ></textarea>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Upload Gambar Artikel</label
+              >
+              <input
+                type="file"
+                id="article-image-file"
+                accept="image/*"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                title="Pilih file gambar artikel"
+                aria-label="File gambar artikel"
+                required
+              />
+              <p class="text-sm text-gray-500 mt-1">
+                Format: JPG, PNG, GIF (Max: 2MB)
+              </p>
+              <div id="article-image-preview" class="mt-2 hidden">
+                <img
+                  id="article-preview-img"
+                  src=""
+                  alt="Preview gambar artikel"
+                  class="w-32 h-32 object-cover rounded border"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button
+                type="button"
+                id="cancel-article"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="adminscript.js"></script>
+  </body>
+</html>
