@@ -868,123 +868,35 @@ footer iframe:hover {
 
 /* Image Modal Styling */
 #image-modal {
-  background: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
 }
 
-#image-modal * {
-  background: transparent !important;
-  background-color: transparent !important;
+#image-modal > div {
+  animation: modalSlideIn 0.3s ease-out;
+  max-width: 90vw;
+  max-height: 90vh;
 }
 
-#image-modal img {
-  background: none !important;
-  background-color: transparent !important;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
 }
 
-/* Ensure no white containers appear */
-#image-modal .bg-white,
-#image-modal .bg-gray-50,
-#image-modal .bg-gray-100 {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-#image-modal {
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  animation: fadeInModal 0.3s ease-out;
-}
-
-#image-modal img {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Enhanced fade-in animation */
-@keyframes fadeInModal {
-  from {
+@keyframes modalSlideIn {
+  from { 
     opacity: 0;
-    -webkit-backdrop-filter: blur(0px);
-    backdrop-filter: blur(0px);
+    transform: scale(0.9) translateY(20px);
   }
-  to {
+  to { 
     opacity: 1;
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
+    transform: scale(1) translateY(0);
   }
-}
-
-/* Modal title styling */
-#image-modal h3 {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  font-weight: 600;
-  letter-spacing: 0.025em;
-}
-
-/* Modal close button styling */
-#image-modal button {
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-#image-modal button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-/* Ensure maximum image size and clarity */
-#image-modal img {
-  max-width: 95vw;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-/* Responsive modal adjustments */
-@media (max-width: 768px) {
-  #image-modal .max-w-6xl {
-    max-width: 95vw;
-    padding: 1rem;
-  }
-
-  #image-modal img {
-    max-height: 70vh;
-    max-width: 90vw;
-  }
-
-  #image-modal h3 {
-    font-size: 1.125rem;
-    margin-bottom: 1rem;
-  }
-
-  #image-modal button {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  #image-modal img {
-    max-height: 60vh;
-    max-width: 85vw;
-  }
-
-  #image-modal h3 {
-    font-size: 1rem;
-  }
-
-  #image-modal .absolute {
-    top: -2.5rem;
-    right: -1rem;
-  }
-}
-
-/* Ensure body doesn't scroll when modal is open */
-body.modal-open {
-  overflow: hidden !important;
-  height: 100vh;
 }
 
 /* Clickable Image Styling */
@@ -1001,7 +913,7 @@ body.modal-open {
 }
 
 .image-clickable::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -1068,8 +980,8 @@ body.modal-open {
 
 /* Article Modal Styling */
 #article-modal {
-  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -1093,12 +1005,12 @@ body.modal-open {
     max-height: 95vh;
     margin: 1rem;
   }
-
+  
   #image-modal img,
   #article-modal img {
     max-height: 60vh !important;
   }
-
+  
   .zoom-icon {
     width: 1.5rem;
     height: 1.5rem;
@@ -1112,17 +1024,17 @@ body.modal-open {
     max-height: 98vh;
     margin: 0.5rem;
   }
-
+  
   #image-modal img,
   #article-modal img {
     max-height: 50vh !important;
   }
-
+  
   #image-modal .p-4,
   #article-modal .p-6 {
     padding: 1rem !important;
   }
-
+  
   .zoom-icon {
     width: 1.25rem;
     height: 1.25rem;
@@ -1172,7 +1084,6 @@ body.modal-open {
 /* Ensure images are always clickable */
 img[onclick] {
   cursor: pointer !important;
-  -webkit-user-select: none;
   user-select: none;
 }
 
