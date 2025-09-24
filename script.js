@@ -273,19 +273,6 @@ async function loadMenuItems() {
     if (error) throw error;
 
     console.log("Menu data loaded:", data);
-    console.log("Number of menu items:", data ? data.length : 0);
-
-    // Debug: Check each menu item
-    if (data && data.length > 0) {
-      data.forEach((menu, index) => {
-        console.log(`Menu ${index + 1}:`, {
-          name: menu.name,
-          image_url: menu.image_url,
-          price: menu.price,
-        });
-      });
-    }
-
     const menuGrid = document.getElementById("menu-grid");
 
     if (!menuGrid) {
@@ -301,46 +288,11 @@ async function loadMenuItems() {
         menuGrid.appendChild(menuItem);
       });
     } else {
-      // If no data, create some sample menu items so something displays
-      console.log("No menu data found, creating sample items...");
-      const sampleMenus = [
-        {
-          name: "Nasi Goreng Spesial",
-          description:
-            "Nasi goreng dengan ayam, udang, dan telur, disajikan dengan acar.",
-          price: 25000,
-          image_url:
-            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop",
-        },
-        {
-          name: "Salad Sayur Segar",
-          description:
-            "Campuran sayur segar dengan dressing vinaigrette, cocok untuk diet.",
-          price: 20000,
-          image_url:
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
-        },
-        {
-          name: "Puding Coklat",
-          description: "Puding coklat lembut dengan topping buah segar.",
-          price: 15000,
-          image_url:
-            "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=300&fit=crop",
-        },
-        {
-          name: "Ayam Bakar Madu",
-          description:
-            "Ayam bakar dengan bumbu madu, lengkap dengan lalapan dan sambal.",
-          price: 30000,
-          image_url:
-            "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
-        },
-      ];
-
-      sampleMenus.forEach((menu) => {
-        const menuItem = createMenuCard(menu);
-        menuGrid.appendChild(menuItem);
-      });
+      menuGrid.innerHTML = `
+        <div class="col-span-full text-center py-8">
+          <p class="text-gray-600">Belum ada menu tersedia.</p>
+        </div>
+      `;
     }
   } catch (error) {
     console.error("Error loading menu items:", error);
@@ -357,36 +309,26 @@ async function loadMenuItems() {
 
 // Create menu card element
 function createMenuCard(menu) {
-  const div = document.createElement("div");
-  div.className = "bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2";
-
-  // Debug: Log menu data to see what's happening
-  console.log("Creating menu card for:", menu);
-
-  // Ensure we always have a working image URL - NO WHITE PLACEHOLDERS
-  const fallbackImages = [
-    'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop'
-  ];
+  const div = document.createElement('div');
+  div.className = 'bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2';
   
-  const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
-  const imageUrl = menu.image_url && menu.image_url.trim() !== '' ? menu.image_url : randomFallback;
-
+  // Create the image element with onclick handler
+  const imageElement = document.createElement('img');
+  imageElement.src = menu.image_url || 'https://source.unsplash.com/400x300/?food';
+  imageElement.alt = menu.name;
+  imageElement.className = 'w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity image-clickable';
+  imageElement.onerror = function() { this.src = 'https://source.unsplash.com/400x300/?food'; };
+  
+  // Add click event listener
+  imageElement.addEventListener('click', function() {
+    openImageModal(menu.image_url || 'https://source.unsplash.com/400x300/?food', menu.name);
+  });
+  
   div.innerHTML = `
     <div class="relative group">
-      <img
-        src="${imageUrl}"
-        alt="${menu.name}"
-        class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-        onclick="openImageModal('${imageUrl.replace(/'/g, '&#39;')}', '${menu.name.replace(/'/g, '&#39;')}')"
-        onerror="this.src='${randomFallback}'"
-        style="background: #f3f4f6; min-height: 256px;"
-        onload="this.style.background = 'transparent'"
-      />
+      <div class="image-container"></div>
       <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-8 h-8 text-white zoom-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
         </svg>
       </div>
@@ -400,7 +342,11 @@ function createMenuCard(menu) {
       </div>
     </div>
   `;
-
+  
+  // Insert the image into the container
+  const imageContainer = div.querySelector('.image-container');
+  imageContainer.appendChild(imageElement);
+  
   return div;
 }
 
@@ -458,60 +404,57 @@ async function loadArticles() {
 // Create article card element
 function createArticleCard(article) {
   const categoryColors = {
-    Business: "bg-orange-500",
-    Catering: "bg-blue-500",
-    Health: "bg-green-500",
+    'Business': 'bg-orange-500',
+    'Catering': 'bg-blue-500',
+    'Health': 'bg-green-500'
   };
 
   const categoryHoverColors = {
-    Business: "hover:text-orange-500",
-    Catering: "hover:text-blue-500",
-    Health: "hover:text-green-500",
+    'Business': 'hover:text-orange-500',
+    'Catering': 'hover:text-blue-500',
+    'Health': 'hover:text-green-500'
   };
 
   const readMoreColors = {
-    Business: "text-orange-500 hover:text-orange-600",
-    Catering: "text-blue-500 hover:text-blue-600",
-    Health: "text-green-500 hover:text-green-600",
+    'Business': 'text-orange-500 hover:text-orange-600',
+    'Catering': 'text-blue-500 hover:text-blue-600',
+    'Health': 'text-green-500 hover:text-green-600'
   };
 
-  const articleElement = document.createElement("article");
-  articleElement.className =
-    "bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300";
-
+  const articleElement = document.createElement('article');
+  articleElement.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300';
+  
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return date.toLocaleDateString('id-ID', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
     });
   };
 
+  // Create the image element with click handler
+  const imageElement = document.createElement('img');
+  imageElement.src = article.image_url || 'https://source.unsplash.com/600x300/?article';
+  imageElement.alt = article.title;
+  imageElement.className = 'w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity image-clickable';
+  imageElement.onerror = function() { this.src = `https://source.unsplash.com/600x300/?${article.category.toLowerCase()}`; };
+  
+  // Add click event listener
+  imageElement.addEventListener('click', function() {
+    openImageModal(article.image_url || 'https://source.unsplash.com/600x300/?article', article.title);
+  });
+
   articleElement.innerHTML = `
     <div class="relative group">
-      <img
-        src="${
-          article.image_url ||
-          "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=300&fit=crop"
-        }"
-        alt="${article.title}"
-        class="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-        onclick="openImageModal('${(
-          article.image_url ||
-          "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=300&fit=crop"
-        ).replace(/'/g, "&#39;")}', '${article.title.replace(/'/g, "&#39;")}')"
-        onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=300&fit=crop'"
-      />
+      <div class="image-container"></div>
       <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-8 h-8 text-white zoom-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
         </svg>
       </div>
       <div class="absolute top-4 left-4">
-        <span class="${
-          categoryColors[article.category] || "bg-gray-500"
-        } text-white px-3 py-1 rounded-full text-sm font-medium">
+        <span class="${categoryColors[article.category] || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm font-medium">
           ${article.category}
         </span>
       </div>
@@ -522,52 +465,38 @@ function createArticleCard(article) {
         <span class="mx-2">•</span>
         <span>${formatDate(article.created_at)}</span>
       </div>
-      <h3 class="text-xl font-bold text-gray-800 mb-3 ${
-        categoryHoverColors[article.category] || "hover:text-gray-600"
-      } transition-colors cursor-pointer" onclick="showArticleContent('${article.title.replace(
-    /'/g,
-    "&#39;"
-  )}', '${article.content.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}', '${
-    article.author
-  }', '${article.category}', '${formatDate(article.created_at)}', '${(
-    article.image_url || ""
-  ).replace(/'/g, "&#39;")}')" >
+      <h3 class="text-xl font-bold text-gray-800 mb-3 ${categoryHoverColors[article.category] || 'hover:text-gray-600'} transition-colors cursor-pointer">
         ${article.title}
       </h3>
       <p class="text-gray-600 leading-relaxed">
-        ${
-          article.content.length > 150
-            ? article.content.substring(0, 150) + "..."
-            : article.content
-        }
+        ${article.content.length > 150 ? article.content.substring(0, 150) + '...' : article.content}
       </p>
       <div class="mt-4">
-        <button onclick="showArticleContent('${article.title.replace(
-          /'/g,
-          "&#39;"
-        )}', '${article.content
-    .replace(/'/g, "&#39;")
-    .replace(/"/g, "&quot;")}', '${article.author}', '${
-    article.category
-  }', '${formatDate(article.created_at)}', '${(article.image_url || "").replace(
-    /'/g,
-    "&#39;"
-  )}')" class="${
-    readMoreColors[article.category] || "text-gray-500 hover:text-gray-600"
-  } font-medium transition-colors cursor-pointer bg-transparent border-none p-0">
+        <button class="${readMoreColors[article.category] || 'text-gray-500 hover:text-gray-600'} font-medium transition-colors cursor-pointer bg-transparent border-none p-0">
           Baca Selengkapnya →
         </button>
       </div>
     </div>
   `;
-
+  
+  // Insert the image into the container
+  const imageContainer = articleElement.querySelector('.image-container');
+  imageContainer.appendChild(imageElement);
+  
+  // Add click handler for "Baca Selengkapnya" and title
+  const readMoreBtn = articleElement.querySelector('button');
+  const titleElement = articleElement.querySelector('h3');
+  
+  readMoreBtn.addEventListener('click', () => openArticleModal(article.id));
+  titleElement.addEventListener('click', () => openArticleModal(article.id));
+  
   return articleElement;
 }
 
 // Store articles data globally for modal access
 let articlesData = [];
 
-// Image Modal Functions - ABSOLUTELY NO WHITE BACKGROUNDS
+// Image Modal Functions - Define at the top level for global access
 function openImageModal(imageUrl, title) {
   console.log("Opening image modal for:", title, imageUrl);
 
@@ -577,145 +506,163 @@ function openImageModal(imageUrl, title) {
     existingModal.remove();
   }
 
-  // Create PURE BLACK modal - NO WHITE ANYWHERE
+  // Create new modal with dark overlay like your reference
   const modal = document.createElement("div");
   modal.id = "image-modal";
-  modal.style.position = "fixed";
-  modal.style.top = "0";
-  modal.style.left = "0";
-  modal.style.width = "100%";
-  modal.style.height = "100%";
-  modal.style.backgroundColor = "black";
-  modal.style.zIndex = "9999";
+  modal.className = "fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4";
   modal.style.display = "flex";
-  modal.style.alignItems = "center";
-  modal.style.justifyContent = "center";
 
-  // ONLY IMAGE AND CLOSE BUTTON - NO WHITE CONTAINERS
+  // Ensure proper escaping for HTML attributes
+  const escapedImageUrl = imageUrl.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  const escapedTitle = title.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
   modal.innerHTML = `
-    <button onclick="closeImageModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 30px; cursor: pointer; z-index: 10000;">×</button>
-    <img 
-      src="${imageUrl}" 
-      alt="${title}" 
-      style="max-width: 90%; max-height: 90%; object-fit: contain; cursor: pointer;"
-      onclick="closeImageModal()"
-    />
-    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; font-size: 18px;">${title}</div>
+    <div class="relative max-w-6xl max-h-full flex flex-col items-center">
+      <!-- Close button in top right -->
+      <button onclick="closeImageModal()" class="absolute -top-12 -right-4 text-white bg-black bg-opacity-60 rounded-full p-3 hover:bg-opacity-80 transition-all z-10 shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <!-- Title above image -->
+      <div class="mb-4 text-center">
+        <h3 class="text-xl font-semibold text-white drop-shadow-lg">${escapedTitle}</h3>
+      </div>
+      
+      <!-- Main image - enlarged and centered -->
+      <div class="flex justify-center items-center">
+        <img 
+          src="${escapedImageUrl}" 
+          alt="${escapedTitle}" 
+          class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" 
+          onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600?text=Image+Not+Found';"
+        >
+      </div>
+      
+      <!-- Close button below image -->
+      <div class="mt-6 text-center">
+        <button onclick="closeImageModal()" class="bg-white text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors font-medium shadow-lg">
+          Tutup
+        </button>
+      </div>
+    </div>
   `;
 
+  // Add to document
   document.body.appendChild(modal);
+  document.body.classList.add("modal-open");
   document.body.style.overflow = "hidden";
 
-  // Close when clicking on black background
+  // Add click outside to close
   modal.addEventListener("click", function (e) {
     if (e.target === modal) {
       closeImageModal();
     }
   });
+
+  // Add fade-in animation
+  modal.style.opacity = "0";
+  setTimeout(() => {
+    modal.style.transition = "opacity 0.3s ease";
+    modal.style.opacity = "1";
+  }, 10);
 }
 
 function closeImageModal() {
   console.log("Closing image modal");
   const modal = document.getElementById("image-modal");
   if (modal) {
-    modal.remove();
-    document.body.style.overflow = "auto";
+    // Add fade-out animation
+    modal.style.transition = "opacity 0.3s ease";
+    modal.style.opacity = "0";
+    setTimeout(() => {
+      modal.remove();
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "auto";
+    }, 300);
   }
 }
 
-// Simple function to show article content without white modal
-function showArticleContent(title, content, author, category, date, imageUrl) {
-  // Create a simple alert or console log for now - no white modals!
-  alert(
-    `${title}\n\nBy: ${author}\nCategory: ${category}\nDate: ${date}\n\n${content}`
-  );
-
-  // If user wants to see the image, call openImageModal
-  if (imageUrl && confirm("Do you want to view the article image?")) {
-    openImageModal(imageUrl, title);
-  }
-}
-
-// Replace the white article modal with a clean dark one like image modal
+// Article Modal Functions
 function openArticleModal(articleId) {
-  const article = articlesData.find((a) => a.id === articleId);
+  const article = articlesData.find(a => a.id === articleId);
   if (!article) return;
 
-  // Remove any existing modals
-  const existingModal = document.getElementById("article-modal");
+  const categoryColors = {
+    'Business': 'bg-orange-500',
+    'Catering': 'bg-blue-500', 
+    'Health': 'bg-green-500'
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Remove any existing article modal first
+  const existingModal = document.getElementById('article-modal');
   if (existingModal) {
     existingModal.remove();
   }
 
-  // Create DARK modal like image modal - NO WHITE BACKGROUNDS
-  const modal = document.createElement("div");
-  modal.id = "article-modal";
-  modal.className = "fixed inset-0 z-50 flex items-center justify-center";
-  modal.style.backgroundColor = "rgba(0, 0, 0, 0.95)";
-  modal.style.display = "flex";
+  // Create new modal
+  const modal = document.createElement('div');
+  modal.id = 'article-modal';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+  modal.style.display = 'flex';
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // Properly escape strings for safe HTML usage
+  const safeImageUrl = (article.image_url || 'https://source.unsplash.com/800x400/?article').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  const safeTitle = (article.title || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
 
-  // NO WHITE CONTAINERS - Just content on dark background
   modal.innerHTML = `
-    <div class="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-      <!-- Close button -->
-      <button onclick="closeArticleModal()" class="fixed top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors p-2">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-      
-      <!-- Article image - clickable to open in image modal -->
-      ${
-        article.image_url
-          ? `
-        <div class="text-center mb-6">
-          <img
-            src="${article.image_url}"
-            alt="${article.title}"
-            class="max-w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity mx-auto"
-            onclick="openImageModal('${article.image_url.replace(
-              /'/g,
-              "&#39;"
-            )}', '${article.title.replace(/'/g, "&#39;")}')"
-          />
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <span class="${categoryColors[article.category] || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm font-medium">
+            ${article.category}
+          </span>
+          <div class="text-sm text-gray-500">
+            <span>${article.author}</span>
+            <span class="mx-2">•</span>
+            <span>${formatDate(article.created_at)}</span>
+          </div>
         </div>
-      `
-          : ""
-      }
-      
-      <!-- Article content -->
-      <div class="text-center mb-4">
-        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-          ${article.category}
-        </span>
+        <button onclick="closeArticleModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+          ×
+        </button>
       </div>
       
-      <h1 class="text-3xl font-bold text-white mb-4 text-center">${
-        article.title
-      }</h1>
-      
-      <div class="text-center text-gray-300 text-sm mb-6">
-        <span>By ${article.author}</span>
-        <span class="mx-2">•</span>
-        <span>${formatDate(article.created_at)}</span>
+      <div class="p-6">
+        <div class="relative mb-6 group">
+          <img
+            src="${article.image_url || 'https://source.unsplash.com/800x400/?article'}"
+            alt="${article.title}"
+            class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            onclick="openImageModal('${safeImageUrl}', '${safeTitle}')"
+            onerror="this.src='https://source.unsplash.com/800x400/?${article.category.toLowerCase()}'"
+          />
+          <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 rounded-lg">
+            <svg class="w-12 h-12 text-white zoom-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+            </svg>
+          </div>
+        </div>
+        
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">${article.title}</h1>
+        
+        <div class="prose max-w-none text-gray-600 leading-relaxed">
+          ${article.content.replace(/\n/g, '</p><p class="mb-4">')}
+        </div>
       </div>
       
-      <div class="text-gray-200 leading-relaxed text-lg">
-        ${article.content.replace(/\n/g, "<br><br>")}
-      </div>
-      
-      <!-- Close button at bottom -->
-      <div class="text-center mt-8">
-        <button onclick="closeArticleModal()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+      <div class="px-6 py-4 bg-gray-50 border-t">
+        <button onclick="closeArticleModal()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           Tutup
         </button>
       </div>
@@ -723,10 +670,11 @@ function openArticleModal(articleId) {
   `;
 
   document.body.appendChild(modal);
-  document.body.style.overflow = "hidden";
-
-  // Close when clicking on dark background
-  modal.addEventListener("click", function (e) {
+  document.body.classList.add('modal-open');
+  document.body.style.overflow = 'hidden';
+  
+  // Add click outside to close
+  modal.addEventListener('click', function(e) {
     if (e.target === modal) {
       closeArticleModal();
     }
@@ -734,12 +682,19 @@ function openArticleModal(articleId) {
 }
 
 function closeArticleModal() {
-  const modal = document.getElementById("article-modal");
+  const modal = document.getElementById('article-modal');
   if (modal) {
     modal.remove();
-    document.body.style.overflow = "auto";
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = 'auto';
   }
 }
+
+// Make functions globally available
+window.openImageModal = openImageModal;
+window.closeImageModal = closeImageModal;
+window.openArticleModal = openArticleModal;
+window.closeArticleModal = closeArticleModal;
 
 // Close modal when clicking outside
 document.addEventListener("click", function (e) {
@@ -750,8 +705,8 @@ document.addEventListener("click", function (e) {
 });
 
 // Close modal with Escape key
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") {
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
     closeImageModal();
     closeArticleModal();
   }
