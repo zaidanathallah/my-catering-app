@@ -1,7 +1,7 @@
 // Supabase Setup
 const supabaseUrl = "https://nmdmriudkchtmdjkgnye.supabase.co";
 const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODUwODMsImV4cCI6MjA3NDE2MTA4M30.LnZrN6eYdAdbbWtDo_8vsWDqJ74NOGkBGjagKFdqoXo";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODU4NTA4MywiZXhwIjoyMDc0MTYxMDgzfQ.TkWuMWxeyyKzhW-hLD6N7FMBrrhHjCUQ-t6eTGAQoPE";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function loadTestimonials() {
@@ -711,3 +711,4 @@ document.addEventListener('keydown', function(e) {
     closeArticleModal();
   }
 });
+
