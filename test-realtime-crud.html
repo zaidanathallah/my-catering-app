@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Realtime CRUD - Almeera Catering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">Test Realtime CRUD</h1>
+
+      <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Instruksi Testing:</h2>
+        <ol class="list-decimal list-inside space-y-2 text-gray-700">
+          <li>Buka halaman ini di satu tab browser</li>
+          <li>
+            Buka
+            <a
+              href="admindashboard.html"
+              class="text-blue-600 underline"
+              target="_blank"
+              >Admin Dashboard</a
+            >
+            di tab lain
+          </li>
+          <li>Edit salah satu menu di Admin Dashboard</li>
+          <li>
+            Perhatikan halaman ini - data harus update otomatis dalam 1-2 detik
+            tanpa refresh
+          </li>
+          <li>Cek console log untuk melihat polling activity</li>
+        </ol>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">
+          Menu Items (Auto-refresh setiap 1.5 detik)
+        </h2>
+        <div id="menu-list" class="space-y-4">
+          <p class="text-gray-500">Loading...</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 mt-6">
+        <h2 class="text-xl font-semibold mb-4">Console Logs</h2>
+        <div
+          id="console-logs"
+          class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-64 overflow-y-auto"
+        >
+          <p>Waiting for logs...</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // Supabase Setup
+      const SUPABASE_URL = "https://brbguarxgdocstqejnqm.supabase.co";
+      const SUPABASE_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+
+      let supabase = null;
+      let lastCheck = Date.now();
+      const logs = [];
+
+      function addLog(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        logs.push(`[${timestamp}] ${message}`);
+        if (logs.length > 50) logs.shift();
+
+        const consoleDiv = document.getElementById("console-logs");
+        consoleDiv.innerHTML = logs.map((log) => `<p>${log}</p>`).join("");
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        console.log(message);
+      }
+
+      async function loadMenus() {
+        try {
+          const { data, error } = await supabase
+            .from("menus")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          const menuList = document.getElementById("menu-list");
+          menuList.innerHTML = "";
+
+          if (data && data.length > 0) {
+            data.forEach((menu) => {
+              const div = document.createElement("div");
+              div.className = "bg-gray-50 p-4 rounded-lg";
+              div.innerHTML = `
+                            <h3 class="font-bold text-lg">${menu.name}</h3>
+                            <p class="text-gray-600">${menu.description}</p>
+                            <p class="text-blue-600 font-semibold">Rp ${parseInt(menu.price).toLocaleString()}</p>
+                            <p class="text-xs text-gray-400 mt-2">Updated: ${new Date(menu.updated_at).toLocaleString("id-ID")}</p>
+                        `;
+              menuList.appendChild(div);
+            });
+            addLog(`✓ Loaded ${data.length} menu items`);
+          } else {
+            menuList.innerHTML = '<p class="text-gray-500">Belum ada menu</p>';
+          }
+        } catch (error) {
+          addLog(`✗ Error loading menus: ${error.message}`);
+        }
+      }
+
+      async function setupRealtime() {
+        addLog("Setting up realtime polling...");
+
+        setInterval(async () => {
+          try {
+            const { data } = await supabase
+              .from("menus")
+              .select("updated_at")
+              .order("updated_at", { ascending: false })
+              .limit(1);
+
+            if (data && data.length > 0) {
+              const latestUpdate = new Date(data[0].updated_at).getTime();
+              if (latestUpdate > lastCheck) {
+                addLog("🔄 Menu update detected! Reloading...");
+                loadMenus();
+                lastCheck = latestUpdate;
+              }
+            }
+          } catch (error) {
+            addLog(`✗ Polling error: ${error.message}`);
+          }
+        }, 1500);
+
+        addLog("✓ Realtime polling active (every 1.5 seconds)");
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", async () => {
+        addLog("Initializing Supabase...");
+
+        if (typeof window.supabase !== "undefined") {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          addLog("✓ Supabase initialized");
+
+          await loadMenus();
+          setupRealtime();
+        } else {
+          addLog("✗ Supabase library not loaded");
+        }
+      });
+    </script>
+  </body>
+</html>

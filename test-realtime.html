@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Realtime - Almeera Catering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">Test Realtime Supabase</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Test Broadcast -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-xl font-bold mb-4">Test Broadcast</h2>
+          <button
+            id="test-insert"
+            class="bg-green-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Test INSERT Menu
+          </button>
+          <button
+            id="test-update"
+            class="bg-yellow-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Test UPDATE Menu
+          </button>
+          <button
+            id="test-delete"
+            class="bg-red-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Test DELETE Menu
+          </button>
+        </div>
+
+        <!-- Realtime Log -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-xl font-bold mb-4">Realtime Log</h2>
+          <div
+            id="realtime-log"
+            class="bg-gray-100 p-4 rounded h-64 overflow-y-auto text-sm"
+          >
+            <p class="text-gray-500">Menunggu events realtime...</p>
+          </div>
+          <button
+            id="clear-log"
+            class="bg-gray-600 text-white px-4 py-2 rounded mt-2"
+          >
+            Clear Log
+          </button>
+        </div>
+      </div>
+
+      <div id="status" class="mt-6 p-4 rounded"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const supabaseUrl = "https://brbguarxgdocstqejnqm.supabase.co";
+      const supabaseKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      const statusDiv = document.getElementById("status");
+      const logDiv = document.getElementById("realtime-log");
+
+      function showStatus(message, type = "info") {
+        statusDiv.className = `mt-6 p-4 rounded ${type === "error" ? "bg-red-100 text-red-700" : type === "success" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`;
+        statusDiv.textContent = message;
+      }
+
+      function addLog(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement("div");
+        logEntry.className = "mb-1";
+        logEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+        logDiv.appendChild(logEntry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      // Setup realtime subscription
+      const channel = supabase
+        .channel("menus:changes", {
+          config: { private: true },
+        })
+        .on("broadcast", { event: "INSERT" }, (payload) => {
+          addLog(
+            `<span class="text-green-600 font-bold">INSERT:</span> ${JSON.stringify(payload.payload)}`,
+          );
+        })
+        .on("broadcast", { event: "UPDATE" }, (payload) => {
+          addLog(
+            `<span class="text-yellow-600 font-bold">UPDATE:</span> ${JSON.stringify(payload.payload)}`,
+          );
+        })
+        .on("broadcast", { event: "DELETE" }, (payload) => {
+          addLog(
+            `<span class="text-red-600 font-bold">DELETE:</span> ${JSON.stringify(payload.payload)}`,
+          );
+        })
+        .subscribe((status) => {
+          addLog(
+            `<span class="text-blue-600 font-bold">CHANNEL:</span> ${status}`,
+          );
+          if (status === "SUBSCRIBED") {
+            showStatus("Realtime channel berhasil terhubung!", "success");
+          }
+        });
+
+      let testMenuId = null;
+
+      // Test INSERT
+      document
+        .getElementById("test-insert")
+        .addEventListener("click", async () => {
+          try {
+            showStatus("Testing INSERT...", "info");
+            const { data, error } = await supabase
+              .from("menus")
+              .insert({
+                name: "Test Menu Realtime",
+                description: "Menu untuk test realtime",
+                price: 15000,
+                image_url: "https://picsum.photos/400/300?random=" + Date.now(),
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            testMenuId = data.id;
+            showStatus("INSERT berhasil! ID: " + testMenuId, "success");
+          } catch (err) {
+            showStatus("Error INSERT: " + err.message, "error");
+          }
+        });
+
+      // Test UPDATE
+      document
+        .getElementById("test-update")
+        .addEventListener("click", async () => {
+          if (!testMenuId) {
+            showStatus("Lakukan INSERT dulu untuk mendapatkan ID", "error");
+            return;
+          }
+
+          try {
+            showStatus("Testing UPDATE...", "info");
+            const { error } = await supabase
+              .from("menus")
+              .update({
+                name: "Test Menu Updated - " + Date.now(),
+                price: Math.floor(Math.random() * 50000) + 10000,
+              })
+              .eq("id", testMenuId);
+
+            if (error) throw error;
+            showStatus("UPDATE berhasil!", "success");
+          } catch (err) {
+            showStatus("Error UPDATE: " + err.message, "error");
+          }
+        });
+
+      // Test DELETE
+      document
+        .getElementById("test-delete")
+        .addEventListener("click", async () => {
+          if (!testMenuId) {
+            showStatus("Lakukan INSERT dulu untuk mendapatkan ID", "error");
+            return;
+          }
+
+          try {
+            showStatus("Testing DELETE...", "info");
+            const { error } = await supabase
+              .from("menus")
+              .delete()
+              .eq("id", testMenuId);
+
+            if (error) throw error;
+            showStatus("DELETE berhasil!", "success");
+            testMenuId = null;
+          } catch (err) {
+            showStatus("Error DELETE: " + err.message, "error");
+          }
+        });
+
+      // Clear log
+      document.getElementById("clear-log").addEventListener("click", () => {
+        logDiv.innerHTML = '<p class="text-gray-500">Log cleared...</p>';
+      });
+
+      addLog(
+        '<span class="text-blue-600 font-bold">INIT:</span> Menghubungkan ke realtime channel...',
+      );
+    </script>
+  </body>
+</html>

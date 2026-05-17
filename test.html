@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Connection</title>
+</head>
+<body>
+    <h1>Test Koneksi Supabase</h1>
+    <div id="result">Loading...</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Test koneksi langsung
+        const supabaseUrl = "https://brbguarxgdocstqejnqm.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+        
+        console.log("Supabase library:", window.supabase);
+        
+        if (window.supabase) {
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            console.log("Supabase client created:", supabase);
+            
+            // Test query
+            supabase
+                .from("menus")
+                .select("id, name, price")
+                .limit(3)
+                .then(({ data, error }) => {
+                    const resultDiv = document.getElementById('result');
+                    if (error) {
+                        console.error("Error:", error);
+                        resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                    } else {
+                        console.log("Data:", data);
+                        resultDiv.innerHTML = `
+                            <h2>Berhasil terhubung!</h2>
+                            <p>Data menu (${data.length} items):</p>
+                            <ul>
+                                ${data.map(item => `<li>${item.name} - Rp ${item.price}</li>`).join('')}
+                            </ul>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error("Catch error:", err);
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Catch Error: ${err.message}</p>`;
+                });
+        } else {
+            document.getElementById('result').innerHTML = '<p style="color: red;">Supabase library tidak loaded!</p>';
+        }
+    </script>
+</body>
+</html>
+</script>

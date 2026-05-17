@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Polling Realtime - Almeera Catering</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">Test Polling Realtime System</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Test Controls -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-xl font-bold mb-4">Test Controls</h2>
+          <button
+            id="update-menu"
+            class="bg-blue-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Update Menu Random
+          </button>
+          <button
+            id="add-testimonial"
+            class="bg-green-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Add Testimonial
+          </button>
+          <button
+            id="update-article"
+            class="bg-yellow-600 text-white px-4 py-2 rounded mb-2 block w-full"
+          >
+            Update Article Random
+          </button>
+          <div id="status" class="mt-4 p-2 rounded text-sm"></div>
+        </div>
+
+        <!-- Polling Log -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-xl font-bold mb-4">Polling Log</h2>
+          <div
+            id="polling-log"
+            class="bg-gray-100 p-4 rounded h-64 overflow-y-auto text-xs"
+          >
+            <p class="text-gray-500">Polling log akan muncul di sini...</p>
+          </div>
+          <button
+            id="clear-log"
+            class="bg-gray-600 text-white px-2 py-1 rounded mt-2 text-sm"
+          >
+            Clear Log
+          </button>
+        </div>
+
+        <!-- Data Display -->
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-xl font-bold mb-4">Latest Data</h2>
+          <div id="latest-data" class="text-sm">
+            <p class="text-gray-500">Data akan dimuat...</p>
+          </div>
+          <button
+            id="refresh-data"
+            class="bg-purple-600 text-white px-2 py-1 rounded mt-2 text-sm"
+          >
+            Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="bg-blue-50 p-4 rounded-lg">
+        <h3 class="font-bold text-blue-800 mb-2">Cara Test:</h3>
+        <ol class="text-blue-700 text-sm list-decimal list-inside space-y-1">
+          <li>Buka halaman ini di satu tab</li>
+          <li>
+            Buka
+            <a href="/index.html" class="underline" target="_blank">Frontend</a>
+            di tab lain
+          </li>
+          <li>
+            Buka
+            <a href="/admindashboard.html" class="underline" target="_blank"
+              >Admin Dashboard</a
+            >
+            di tab ketiga
+          </li>
+          <li>Klik tombol "Update Menu Random" di sini</li>
+          <li>
+            Lihat apakah perubahan muncul di tab Frontend dan Admin dalam 1-2
+            detik
+          </li>
+          <li>Cek polling log untuk melihat aktivitas realtime</li>
+        </ol>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const supabaseUrl = "https://brbguarxgdocstqejnqm.supabase.co";
+      const supabaseKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      const statusDiv = document.getElementById("status");
+      const logDiv = document.getElementById("polling-log");
+      const dataDiv = document.getElementById("latest-data");
+
+      function showStatus(message, type = "info") {
+        statusDiv.className = `mt-4 p-2 rounded text-sm ${type === "error" ? "bg-red-100 text-red-700" : type === "success" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`;
+        statusDiv.textContent = message;
+      }
+
+      function addLog(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement("div");
+        logEntry.className = "mb-1";
+        logEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+        logDiv.appendChild(logEntry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      // Polling simulation untuk test
+      let lastCheck = Date.now();
+      setInterval(async () => {
+        try {
+          const { data } = await supabase
+            .from("menus")
+            .select("updated_at")
+            .order("updated_at", { ascending: false })
+            .limit(1);
+
+          if (data && data.length > 0) {
+            const latestUpdate = new Date(data[0].updated_at).getTime();
+            if (latestUpdate > lastCheck) {
+              addLog(
+                '<span class="text-green-600 font-bold">DETECTED:</span> Menu update via polling',
+              );
+              lastCheck = latestUpdate;
+              refreshData();
+            }
+          }
+        } catch (error) {
+          addLog(
+            '<span class="text-red-600 font-bold">ERROR:</span> ' +
+              error.message,
+          );
+        }
+      }, 1500);
+
+      async function refreshData() {
+        try {
+          const { data: menuData } = await supabase
+            .from("menus")
+            .select("name, updated_at")
+            .order("updated_at", { ascending: false })
+            .limit(3);
+
+          const { data: articleData } = await supabase
+            .from("articles")
+            .select("title, updated_at")
+            .order("updated_at", { ascending: false })
+            .limit(2);
+
+          const { data: testimonialData } = await supabase
+            .from("testimonials")
+            .select("name, updated_at")
+            .order("updated_at", { ascending: false })
+            .limit(2);
+
+          let html = '<div class="space-y-2">';
+          html += "<div><strong>Latest Menus:</strong></div>";
+          menuData?.forEach((item) => {
+            html += `<div class="text-xs">• ${item.name}</div>`;
+          });
+
+          html += '<div class="mt-2"><strong>Latest Articles:</strong></div>';
+          articleData?.forEach((item) => {
+            html += `<div class="text-xs">• ${item.title}</div>`;
+          });
+
+          html +=
+            '<div class="mt-2"><strong>Latest Testimonials:</strong></div>';
+          testimonialData?.forEach((item) => {
+            html += `<div class="text-xs">• ${item.name}</div>`;
+          });
+          html += "</div>";
+
+          dataDiv.innerHTML = html;
+        } catch (error) {
+          dataDiv.innerHTML = `<p class="text-red-500 text-sm">Error: ${error.message}</p>`;
+        }
+      }
+
+      // Test buttons
+      document
+        .getElementById("update-menu")
+        .addEventListener("click", async () => {
+          try {
+            showStatus("Updating menu...", "info");
+            const randomId = Math.floor(Math.random() * 8) + 1; // ID 1-8
+            const { error } = await supabase
+              .from("menus")
+              .update({
+                name: "Updated Menu - " + Date.now(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", randomId);
+
+            if (error) throw error;
+            showStatus(
+              "Menu updated! Check other tabs for realtime update.",
+              "success",
+            );
+            addLog(
+              '<span class="text-blue-600 font-bold">ACTION:</span> Menu updated manually',
+            );
+          } catch (err) {
+            showStatus("Error: " + err.message, "error");
+          }
+        });
+
+      document
+        .getElementById("add-testimonial")
+        .addEventListener("click", async () => {
+          try {
+            showStatus("Adding testimonial...", "info");
+            const { error } = await supabase.from("testimonials").insert({
+              name: "Test User " + Date.now(),
+              message:
+                "Test testimonial dari polling test - " +
+                new Date().toLocaleTimeString(),
+            });
+
+            if (error) throw error;
+            showStatus(
+              "Testimonial added! Check other tabs for realtime update.",
+              "success",
+            );
+            addLog(
+              '<span class="text-blue-600 font-bold">ACTION:</span> Testimonial added manually',
+            );
+          } catch (err) {
+            showStatus("Error: " + err.message, "error");
+          }
+        });
+
+      document
+        .getElementById("update-article")
+        .addEventListener("click", async () => {
+          try {
+            showStatus("Updating article...", "info");
+            const randomId = Math.floor(Math.random() * 6) + 1; // ID 1-6
+            const { error } = await supabase
+              .from("articles")
+              .update({
+                title: "Updated Article - " + Date.now(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", randomId);
+
+            if (error) throw error;
+            showStatus(
+              "Article updated! Check other tabs for realtime update.",
+              "success",
+            );
+            addLog(
+              '<span class="text-blue-600 font-bold">ACTION:</span> Article updated manually',
+            );
+          } catch (err) {
+            showStatus("Error: " + err.message, "error");
+          }
+        });
+
+      document.getElementById("clear-log").addEventListener("click", () => {
+        logDiv.innerHTML = '<p class="text-gray-500">Log cleared...</p>';
+      });
+
+      document
+        .getElementById("refresh-data")
+        .addEventListener("click", refreshData);
+
+      // Initial load
+      refreshData();
+      addLog(
+        '<span class="text-blue-600 font-bold">INIT:</span> Polling test started',
+      );
+    </script>
+  </body>
+</html>

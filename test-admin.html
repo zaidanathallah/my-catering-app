@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <h1 class="text-2xl font-bold mb-4">Test Admin Dashboard - CRUD</h1>
+
+    <div id="status" class="mb-4 p-4 rounded bg-blue-100">
+      <p>Memuat...</p>
+    </div>
+
+    <!-- Test Menu CRUD -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">Test Menu CRUD</h2>
+
+      <div class="mb-4">
+        <button
+          id="add-test-menu"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Tambah Menu Test
+        </button>
+        <button
+          id="load-menus"
+          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 ml-2"
+        >
+          Reload Menu
+        </button>
+      </div>
+
+      <div id="menu-list" class="space-y-2">
+        <!-- Menu akan dimuat di sini -->
+      </div>
+    </div>
+
+    <!-- Test Article CRUD -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-bold mb-4">Test Article CRUD</h2>
+
+      <div class="mb-4">
+        <button
+          id="add-test-article"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Tambah Artikel Test
+        </button>
+        <button
+          id="load-articles"
+          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 ml-2"
+        >
+          Reload Artikel
+        </button>
+      </div>
+
+      <div id="article-list" class="space-y-2">
+        <!-- Artikel akan dimuat di sini -->
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // Supabase Setup
+      const supabaseUrl = "https://brbguarxgdocstqejnqm.supabase.co";
+      const supabaseKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+      console.log("Supabase client:", supabase);
+
+      // Test koneksi
+      async function testConnection() {
+        try {
+          const { data, error } = await supabase
+            .from("menus")
+            .select("count", { count: "exact", head: true });
+
+          if (error) throw error;
+
+          document.getElementById("status").innerHTML =
+            '<p class="text-green-600">Koneksi berhasil!</p>';
+          return true;
+        } catch (error) {
+          console.error("Connection error:", error);
+          document.getElementById("status").innerHTML =
+            `<p class="text-red-600">Error: ${error.message}</p>`;
+          return false;
+        }
+      }
+
+      // Load menus
+      async function loadMenus() {
+        try {
+          const { data, error } = await supabase
+            .from("menus")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          const container = document.getElementById("menu-list");
+          container.innerHTML = "";
+
+          if (data && data.length > 0) {
+            data.forEach((menu) => {
+              const div = document.createElement("div");
+              div.className =
+                "bg-gray-50 p-3 rounded flex justify-between items-center";
+              div.innerHTML = `
+                            <div>
+                                <strong>${menu.name}</strong> - Rp ${parseInt(menu.price).toLocaleString()}
+                                <br><small class="text-gray-600">${menu.description}</small>
+                            </div>
+                            <button onclick="deleteMenu(${menu.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600">
+                                Hapus
+                            </button>
+                        `;
+              container.appendChild(div);
+            });
+          } else {
+            container.innerHTML = '<p class="text-gray-500">Belum ada menu</p>';
+          }
+        } catch (error) {
+          console.error("Error loading menus:", error);
+          document.getElementById("menu-list").innerHTML =
+            `<p class="text-red-600">Error: ${error.message}</p>`;
+        }
+      }
+
+      // Add test menu
+      async function addTestMenu() {
+        try {
+          const testMenu = {
+            name: `Menu Test ${Date.now()}`,
+            description: "Menu test untuk CRUD",
+            price: Math.floor(Math.random() * 50000) + 10000,
+            image_url: "https://picsum.photos/400/300?random=" + Date.now(),
+            category: "Test",
+          };
+
+          const { data, error } = await supabase
+            .from("menus")
+            .insert([testMenu]);
+
+          if (error) throw error;
+
+          console.log("Menu added:", data);
+          loadMenus();
+        } catch (error) {
+          console.error("Error adding menu:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Delete menu
+      async function deleteMenu(id) {
+        if (!confirm("Hapus menu ini?")) return;
+
+        try {
+          const { error } = await supabase.from("menus").delete().eq("id", id);
+
+          if (error) throw error;
+
+          loadMenus();
+        } catch (error) {
+          console.error("Error deleting menu:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Load articles
+      async function loadArticles() {
+        try {
+          const { data, error } = await supabase
+            .from("articles")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          const container = document.getElementById("article-list");
+          container.innerHTML = "";
+
+          if (data && data.length > 0) {
+            data.forEach((article) => {
+              const div = document.createElement("div");
+              div.className =
+                "bg-gray-50 p-3 rounded flex justify-between items-center";
+              div.innerHTML = `
+                            <div>
+                                <strong>${article.title}</strong> - ${article.category}
+                                <br><small class="text-gray-600">By ${article.author}</small>
+                            </div>
+                            <button onclick="deleteArticle(${article.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600">
+                                Hapus
+                            </button>
+                        `;
+              container.appendChild(div);
+            });
+          } else {
+            container.innerHTML =
+              '<p class="text-gray-500">Belum ada artikel</p>';
+          }
+        } catch (error) {
+          console.error("Error loading articles:", error);
+          document.getElementById("article-list").innerHTML =
+            `<p class="text-red-600">Error: ${error.message}</p>`;
+        }
+      }
+
+      // Add test article
+      async function addTestArticle() {
+        try {
+          const testArticle = {
+            title: `Artikel Test ${Date.now()}`,
+            content:
+              "Ini adalah artikel test untuk CRUD. Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            author: "Admin Test",
+            category: "Test",
+            image_url: "https://picsum.photos/600/400?random=" + Date.now(),
+          };
+
+          const { data, error } = await supabase
+            .from("articles")
+            .insert([testArticle]);
+
+          if (error) throw error;
+
+          console.log("Article added:", data);
+          loadArticles();
+        } catch (error) {
+          console.error("Error adding article:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Delete article
+      async function deleteArticle(id) {
+        if (!confirm("Hapus artikel ini?")) return;
+
+        try {
+          const { error } = await supabase
+            .from("articles")
+            .delete()
+            .eq("id", id);
+
+          if (error) throw error;
+
+          loadArticles();
+        } catch (error) {
+          console.error("Error deleting article:", error);
+          alert("Error: " + error.message);
+        }
+      }
+
+      // Setup realtime
+      function setupRealtime() {
+        supabase
+          .channel("test-menus")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "menus" },
+            (payload) => {
+              console.log("Menu realtime:", payload);
+              loadMenus();
+            },
+          )
+          .subscribe();
+
+        supabase
+          .channel("test-articles")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "articles" },
+            (payload) => {
+              console.log("Article realtime:", payload);
+              loadArticles();
+            },
+          )
+          .subscribe();
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", async function () {
+        await testConnection();
+        loadMenus();
+        loadArticles();
+        setupRealtime();
+
+        // Event listeners
+        document
+          .getElementById("add-test-menu")
+          .addEventListener("click", addTestMenu);
+        document
+          .getElementById("load-menus")
+          .addEventListener("click", loadMenus);
+        document
+          .getElementById("add-test-article")
+          .addEventListener("click", addTestArticle);
+        document
+          .getElementById("load-articles")
+          .addEventListener("click", loadArticles);
+      });
+
+      // Make functions global
+      window.deleteMenu = deleteMenu;
+      window.deleteArticle = deleteArticle;
+    </script>
+  </body>
+</html>
