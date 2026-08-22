@@ -1,0 +1,20 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Berjalan setiap hari pada jam 18:00 UTC (01:00 WIB tengah malam)
+    - cron: '0 18 * * *'
+  workflow_dispatch: # Memungkinkan trigger manual jika diperlukan
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database to Prevent Pause
+        run: |
+          echo "Pinging Supabase REST API..."
+          curl -s -X GET "https://nmdmriudkchtmdjkgnye.supabase.co/rest/v1/menus?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODUwODMsImV4cCI6MjA3NDE2MTA4M30.LnZrN6eYdAdbbWtDo_8vsWDqJ74NOGkBGjagKFdqoXo" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODUwODMsImV4cCI6MjA3NDE2MTA4M30.LnZrN6eYdAdbbWtDo_8vsWDqJ74NOGkBGjagKFdqoXo"
+          echo ""
+          echo "Supabase successfully pinged!"

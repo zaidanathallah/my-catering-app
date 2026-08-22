@@ -3,9 +3,9 @@
   "use strict";
 
   // Supabase Setup untuk Admin
-  const ADMIN_SUPABASE_URL = "https://brbguarxgdocstqejnqm.supabase.co";
+  const ADMIN_SUPABASE_URL = "https://nmdmriudkchtmdjkgnye.supabase.co";
   const ADMIN_SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODUwODMsImV4cCI6MjA3NDE2MTA4M30.LnZrN6eYdAdbbWtDo_8vsWDqJ74NOGkBGjagKFdqoXo";
 
   let adminSupabase = null;
 

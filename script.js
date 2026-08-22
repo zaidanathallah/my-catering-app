@@ -3,9 +3,9 @@
   "use strict";
 
   // Supabase Setup
-  const FRONTEND_SUPABASE_URL = "https://brbguarxgdocstqejnqm.supabase.co";
+  const FRONTEND_SUPABASE_URL = "https://nmdmriudkchtmdjkgnye.supabase.co";
   const FRONTEND_SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyYmd1YXJ4Z2RvY3N0cWVqbnFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5Mzg4MzQsImV4cCI6MjA5NDUxNDgzNH0.iay49VK7sI2vHiYuPSS8PygeGSVk4pIatjSGYPAJ7j0";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZG1yaXVka2NodG1kamtnbnllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODUwODMsImV4cCI6MjA3NDE2MTA4M30.LnZrN6eYdAdbbWtDo_8vsWDqJ74NOGkBGjagKFdqoXo";
 
   let frontendSupabase = null;
   let articlesData = [];
@@ -71,19 +71,93 @@
 
       inner.innerHTML = "";
       if (data && data.length > 0) {
-        const duplicated = [...data, ...data];
-        duplicated.forEach((item) => {
+        data.forEach((item) => {
           const div = document.createElement("div");
-          div.className = "carousel-item bg-white p-4 rounded shadow";
-          div.innerHTML = `<p class="font-bold">${item.name}</p><p>${item.message}</p>`;
+          div.className = "carousel-item bg-white p-6 rounded-xl shadow-lg";
+          div.innerHTML = `
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                  ${item.name.charAt(0).toUpperCase()}
+                </div>
+              </div>
+              <div class="flex-1">
+                <p class="font-bold text-lg text-gray-800 mb-2">${item.name}</p>
+                <p class="text-gray-600 leading-relaxed">${item.message}</p>
+                <p class="text-sm text-gray-400 mt-2">${new Date(item.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}</p>
+              </div>
+            </div>
+          `;
           inner.appendChild(div);
         });
+
+        // Setup carousel navigation
+        setupCarouselNavigation(data.length);
       } else {
-        inner.innerHTML = '<p class="text-center">Belum ada testimoni.</p>';
+        inner.innerHTML =
+          '<p class="text-center text-gray-500 py-8">Belum ada testimoni.</p>';
       }
     } catch (error) {
       console.error("Error loading testimonials:", error);
     }
+  }
+
+  // Setup carousel navigation
+  let currentSlide = 0;
+  let totalSlides = 0;
+  let slidesPerView = 3;
+
+  function setupCarouselNavigation(itemCount) {
+    totalSlides = itemCount;
+    const inner = document.getElementById("carousel-inner");
+    const prevBtn = document.getElementById("carousel-prev");
+    const nextBtn = document.getElementById("carousel-next");
+
+    if (!inner || !prevBtn || !nextBtn) return;
+
+    // Determine slides per view based on screen width
+    function updateSlidesPerView() {
+      if (window.innerWidth < 768) {
+        slidesPerView = 1;
+      } else if (window.innerWidth < 1024) {
+        slidesPerView = 2;
+      } else {
+        slidesPerView = 3;
+      }
+    }
+
+    updateSlidesPerView();
+    window.addEventListener("resize", updateSlidesPerView);
+
+    function updateCarousel() {
+      const slideWidth = 100 / slidesPerView;
+      const translateX = -(currentSlide * slideWidth);
+      inner.style.transform = `translateX(${translateX}%)`;
+    }
+
+    prevBtn.onclick = () => {
+      // Loop ke akhir jika di awal
+      if (currentSlide === 0) {
+        currentSlide = Math.max(0, totalSlides - slidesPerView);
+      } else {
+        currentSlide--;
+      }
+      updateCarousel();
+    };
+
+    nextBtn.onclick = () => {
+      const maxSlide = Math.max(0, totalSlides - slidesPerView);
+      // Loop ke awal jika di akhir
+      if (currentSlide >= maxSlide) {
+        currentSlide = 0;
+      } else {
+        currentSlide++;
+      }
+      updateCarousel();
+    };
+
+    // Initial update
+    updateCarousel();
   }
 
   // Load menu items

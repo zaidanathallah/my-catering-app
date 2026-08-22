@@ -2,39 +2,163 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS untuk slider testimoni bergerak infinite */
+/* CSS untuk slider testimoni dengan kontrol manual - MOBILE FRIENDLY */
 .carousel {
   overflow: hidden;
-  white-space: nowrap;
   position: relative;
+  padding: 0 3rem;
+  margin: 0 auto;
+  max-width: 100%;
 }
 
 .carousel-inner {
-  display: inline-flex;
-  animation: slide 20s linear infinite;
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  gap: 1rem;
+  width: 100%;
 }
 
 .carousel-item {
-  min-width: 250px;
-  margin-right: 1rem;
+  min-width: calc(33.333% - 0.75rem);
   flex-shrink: 0;
   background: #ffffff;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .carousel-item:hover {
-  transform: scale(1.05);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes slide {
-  0% {
-    transform: translateX(0);
+/* Tombol navigasi carousel */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-btn:hover {
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-btn-prev {
+  left: 0.5rem;
+}
+
+.carousel-btn-next {
+  right: 0.5rem;
+}
+
+.carousel-btn svg {
+  width: 22px;
+  height: 22px;
+  color: #1f2937;
+}
+
+/* Responsive carousel */
+@media (max-width: 1024px) {
+  .carousel-item {
+    min-width: calc(50% - 0.5rem);
   }
-  100% {
-    transform: translateX(-50%);
+
+  .carousel {
+    padding: 0 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel {
+    padding: 0 3rem;
+    margin: 0 -1rem;
+  }
+
+  .carousel-inner {
+    gap: 0.75rem;
+  }
+
+  .carousel-item {
+    min-width: calc(100% - 1rem);
+    padding: 1.25rem;
+    margin: 0 0.5rem;
+  }
+
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .carousel-btn-prev {
+    left: 0.25rem;
+  }
+
+  .carousel-btn-next {
+    right: 0.25rem;
+  }
+
+  .carousel-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel {
+    padding: 0 2.5rem;
+    margin: 0 -0.5rem;
+  }
+
+  .carousel-item {
+    min-width: calc(100% - 0.5rem);
+    padding: 1rem;
+    margin: 0 0.25rem;
+  }
+
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .carousel-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .carousel-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -136,7 +260,8 @@ section {
   background: #ffffff;
   border-radius: 1rem;
   overflow: hidden;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(229, 231, 235, 0.5);
@@ -144,7 +269,8 @@ section {
 
 #menu .grid div:hover {
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
     0 10px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
@@ -251,7 +377,8 @@ section {
 
   #menu .grid div {
     border-radius: 1.5rem;
-    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1),
+    box-shadow:
+      0 15px 35px -5px rgba(0, 0, 0, 0.1),
       0 5px 15px -5px rgba(0, 0, 0, 0.05);
   }
 
@@ -359,7 +486,8 @@ section {
 #testimoni .bg-white {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
@@ -677,7 +805,9 @@ footer iframe:hover {
 }
 
 #artikel article {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 #artikel article:hover {
@@ -880,20 +1010,20 @@ footer iframe:hover {
 }
 
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
   }
-  to { 
-    opacity: 1; 
+  to {
+    opacity: 1;
   }
 }
 
 @keyframes modalSlideIn {
-  from { 
+  from {
     opacity: 0;
     transform: scale(0.9) translateY(20px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
@@ -913,7 +1043,7 @@ footer iframe:hover {
 }
 
 .image-clickable::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1005,12 +1135,12 @@ footer iframe:hover {
     max-height: 95vh;
     margin: 1rem;
   }
-  
+
   #image-modal img,
   #article-modal img {
     max-height: 60vh !important;
   }
-  
+
   .zoom-icon {
     width: 1.5rem;
     height: 1.5rem;
@@ -1024,17 +1154,17 @@ footer iframe:hover {
     max-height: 98vh;
     margin: 0.5rem;
   }
-  
+
   #image-modal img,
   #article-modal img {
     max-height: 50vh !important;
   }
-  
+
   #image-modal .p-4,
   #article-modal .p-6 {
     padding: 1rem !important;
   }
-  
+
   .zoom-icon {
     width: 1.25rem;
     height: 1.25rem;
@@ -1097,3 +1227,4 @@ img[src=""] {
   opacity: 0.5;
   background: #f3f4f6;
 }
+
